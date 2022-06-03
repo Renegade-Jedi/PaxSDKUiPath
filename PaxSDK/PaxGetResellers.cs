@@ -13,11 +13,7 @@ namespace PaxSDK
 {
     public class PaxGetResellers : CodeActivity
     {
-        //[Category("Input")]
-        //[RequiredArgument]
-        //[Description("Enter URL")]
-        //public InArgument<string> BaseURL { get; set; }
-
+        
         [Category("Input")]
         [RequiredArgument]
         [Description("Enter Api Key")]
@@ -33,13 +29,10 @@ namespace PaxSDK
 
         protected override void Execute(CodeActivityContext context)
         {
-            //string BASEURL = BaseURL.Get(context);
             string KEY = APIKey.Get(context);
             string SECRET = Secret.Get(context);
 
             string BASEURL = "https://api.paxstore.us/p-market-api";
-            //string KEY = "S83Y6CUH0THROWNAVZLS";
-            //string SECRET = "AXQTM1W2JJ1Q95P00ZZUQNGS9S8BFZ45V0Z53KCR";
 
             try
             {
@@ -62,10 +55,6 @@ namespace PaxSDK
 
     public class PaxGetTerminal : CodeActivity
     {
-        //[Category("Input")]
-        //[RequiredArgument]
-        //[Description("Enter URL")]
-        //public InArgument<string> BaseURL { get; set; }
 
         [Category("Input")]
         [RequiredArgument]
@@ -86,14 +75,11 @@ namespace PaxSDK
         public OutArgument<string> TerminalList { get; set; }
 
         protected override void Execute(CodeActivityContext context)
-        {
-            //string BASEURL = BaseURL.Get(context);
+        {            
             string KEY = APIKey.Get(context);
             string SECRET = Secret.Get(context);
             string TID = TId.Get(context);
-            string BASEURL = "https://api.paxstore.us/p-market-api";
-            //string KEY = "S83Y6CUH0THROWNAVZLS";
-            //string SECRET = "AXQTM1W2JJ1Q95P00ZZUQNGS9S8BFZ45V0Z53KCR";
+            string BASEURL = "https://api.paxstore.us/p-market-api";          
 
             try
             {
