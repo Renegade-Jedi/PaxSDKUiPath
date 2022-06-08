@@ -70,7 +70,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PaxGetResellers.cs" />
+    <Compile Include="PaxMerchant.cs" />
+    <Compile Include="PaxTerminal.cs" />
+    <Compile Include="PaxResellers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
