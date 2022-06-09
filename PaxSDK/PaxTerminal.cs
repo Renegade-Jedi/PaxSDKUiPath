@@ -2,9 +2,6 @@
 using Paxstore.OpenApi;
 using Paxstore.OpenApi.Model;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Activities;
 using System.ComponentModel;
 using Newtonsoft.Json;
@@ -59,8 +56,8 @@ namespace PaxSDKUiPath
     }
     #endregion
 
-    #region PaxCreateTerminal
-    public class PaxCreateTerminal : CodeActivity
+    #region PaxCreateTerminalAPK
+    public class PaxCreateTerminalAPK : CodeActivity
     {
         #region Inputs
         [Category("Input")]
@@ -119,17 +116,230 @@ namespace PaxSDKUiPath
                 Result<string> GetTerminal()
                 {
                     TerminalApkApi api = new TerminalApkApi(BASEURL, KEY, SECRET);
-                    CreateTerminalApkRequest createTerminalApkRequest = new CreateTerminalApkRequest();
-                    createTerminalApkRequest.TID = _TID;
-                    createTerminalApkRequest.SerialNo = serialNo;
-                    createTerminalApkRequest.PackageName = packageName;
-                    createTerminalApkRequest.Version = version;
-                    createTerminalApkRequest.TemplateName = templateName;
-                    createTerminalApkRequest.Parameters = _Parameters;
+                    CreateTerminalApkRequest createTerminalApkRequest = new CreateTerminalApkRequest
+                    {
+                        TID = _TID,
+                        SerialNo = serialNo,
+                        PackageName = packageName,
+                        Version = version,
+                        TemplateName = templateName,
+                        Parameters = _Parameters
+                    };
                     Result<string> result = api.CreateTerminalApk(createTerminalApkRequest);
                     return result;
                 }
                 string jsonOutput = JsonConvert.SerializeObject(GetTerminal());
+                RequestOutput.Set(context, jsonOutput);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Message: {0}", ex.Message);
+            }
+        }
+    }
+    #endregion
+
+    #region PaxCreateTerminal
+    public class PaxCreateTerminal : CodeActivity
+    {
+        #region Inputs
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Key")]
+        public InArgument<string> APIKey { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Secret")]
+        public InArgument<string> Secret { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The name of terminal, max length is 64.")]
+        public InArgument<string> Name { get; set; }
+
+        [Category("Input")]
+        [Description("he tid of terminal. If it is empty system will generate a tid when creating. And the length range is from 8 to 16")]
+        public InArgument<string> TID { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The serial number of terminal. If the status is active the serial number is mandatory.")]
+        public InArgument<string> SerialNo { get; set; }
+
+        [Category("Input")]
+        [Description("The merchant of terminal belongs to. If the initial is active then merchantName is mandatory. The max length is 64. Make sure the merchant belongs to the given reseller")]
+        public InArgument<string> MerchantName { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The reseller of terminal belongs to. Max length is 64.")]
+        public InArgument<string> ResellerName { get; set; }
+
+        [Category("Input")]
+        [Description("The model name of terminal. Max length is 64.")]
+        public InArgument<string> ModelName { get; set; }
+
+        [Category("Input")]
+        [Description("The location of terminal, max length is 64.")]
+        public InArgument<string> Location { get; set; }
+
+        [Category("Input")]
+        [Description("The remark of terminal, max length is 64.")]
+        public InArgument<string> Remark { get; set; }
+
+        [Category("Input")]
+        [Description("Status of terminal, valus can be one of A(Active) and P(Pendding). If status is null the initial status is P(Pendding) when creating.")]
+        public InArgument<string> Status { get; set; }
+
+        #endregion
+
+        [Category("Output")]
+        public OutArgument<string> RequestOutput { get; set; }
+
+        protected override void Execute(CodeActivityContext context)
+        {
+            string KEY = APIKey.Get(context);
+            string SECRET = Secret.Get(context);
+            string BASEURL = "https://api.paxstore.us/p-market-api";
+            
+            string name = Name.Get(context);
+            string tid = TID.Get(context);
+            string serialNo = SerialNo.Get(context);
+            string merchantName = MerchantName.Get(context);
+            string resellerName = ResellerName.Get(context);
+            string modelName = ModelName.Get(context);
+            string location = Location.Get(context);
+            string remark = Remark.Get(context);
+            string status = Status.Get(context);
+
+            try
+            {
+                Result<Terminal> GetTerminal()
+                {
+                    TerminalApi api = new TerminalApi(BASEURL, KEY, SECRET);
+                    TerminalCreateRequest createRequest = new TerminalCreateRequest
+                    {
+                        Name = name,
+                        TID = tid,
+                        SerialNo = serialNo,
+                        MerchantName = merchantName,
+                        ResellerName = resellerName,
+                        ModelName = modelName,
+                        Location = location,
+                        Remark = remark,
+                        Status = status
+                    };
+                    Result<Terminal> result = api.CreateTerminal(createRequest);
+                    return result;
+                }
+                string jsonOutput = JsonConvert.SerializeObject(GetTerminal());
+                RequestOutput.Set(context, jsonOutput);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Message: {0}", ex.Message);
+            }
+        }
+    }
+    #endregion
+
+    #region PaxUpdateTerminal
+    public class PaxUpdateTerminal : CodeActivity
+    {
+        #region Inputs
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Key")]
+        public InArgument<string> APIKey { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Secret")]
+        public InArgument<string> Secret { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Terminal's id(Get from the result of create terminal, not the TID of terminal)")]
+        public InArgument<long> TerminalId { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The name of terminal, max length is 64.")]
+        public InArgument<string> Name { get; set; }
+
+        [Category("Input")]
+        [Description("he tid of terminal. If it is empty system will generate a tid when creating. And the length range is from 8 to 16")]
+        public InArgument<string> TID { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The serial number of terminal. If the status is active the serial number is mandatory.")]
+        public InArgument<string> SerialNo { get; set; }
+
+        [Category("Input")]
+        [Description("The merchant of terminal belongs to. If the initial is active then merchantName is mandatory. The max length is 64. Make sure the merchant belongs to the given reseller")]
+        public InArgument<string> MerchantName { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The reseller of terminal belongs to. Max length is 64.")]
+        public InArgument<string> ResellerName { get; set; }
+
+        [Category("Input")]
+        [Description("The model name of terminal. Max length is 64.")]
+        public InArgument<string> ModelName { get; set; }
+
+        [Category("Input")]
+        [Description("The location of terminal, max length is 64.")]
+        public InArgument<string> Location { get; set; }
+
+        [Category("Input")]
+        [Description("The remark of terminal, max length is 64.")]
+        public InArgument<string> Remark { get; set; }
+
+
+        #endregion
+
+        [Category("Output")]
+        public OutArgument<string> RequestOutput { get; set; }
+
+        protected override void Execute(CodeActivityContext context)
+        {
+            string KEY = APIKey.Get(context);
+            string SECRET = Secret.Get(context);
+            string BASEURL = "https://api.paxstore.us/p-market-api";
+
+            long terminalId = TerminalId.Get(context);
+            string name = Name.Get(context);
+            string tid = TID.Get(context);
+            string serialNo = SerialNo.Get(context);
+            string merchantName = MerchantName.Get(context);
+            string resellerName = ResellerName.Get(context);
+            string modelName = ModelName.Get(context);
+            string location = Location.Get(context);
+            string remark = Remark.Get(context);           
+
+            try
+            {
+                Result<Terminal> UpdateTerminal()
+                {
+                    TerminalApi api = new TerminalApi(BASEURL, KEY, SECRET);
+                    TerminalUpdateRequest updateRequest = new TerminalUpdateRequest
+                    {
+                        Name = name,
+                        TID = tid,
+                        SerialNo = serialNo,
+                        MerchantName = merchantName,
+                        ResellerName = resellerName,
+                        ModelName = modelName,
+                        Location = location,
+                        Remark = remark
+                    };
+                    Result<Terminal> updateResult = api.UpdateTerminal(terminalId, updateRequest);
+                    return updateResult;
+                }
+                string jsonOutput = JsonConvert.SerializeObject(UpdateTerminal());
                 RequestOutput.Set(context, jsonOutput);
             }
             catch (Exception ex)
