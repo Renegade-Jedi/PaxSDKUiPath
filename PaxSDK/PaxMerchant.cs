@@ -60,6 +60,117 @@ namespace PaxSDKUiPath
     }
     #endregion
 
+    #region PaxCreateMerchant
+    public class PaxCreateMerchant : CodeActivity
+    {
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Key")]
+        public InArgument<string> APIKey { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Secret")]
+        public InArgument<string> Secret { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Merchant name, max length is 64")]
+        public InArgument<string> Name { get; set; }
+        
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Email of merchant, max length is 255")]
+        public InArgument<string> Email { get; set; }
+        
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Reseller name of merchant, max length is 64. Make sure the reseller exist.")]
+        public InArgument<string> ResellerName { get; set; }
+        
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Contact of merchant, max length is 64")]
+        public InArgument<string> Contact { get; set; }
+        
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("the country code, please refer to Country Codes")]
+        public InArgument<string> Country { get; set; }
+        
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Phone number of merchant, max length is 32")]
+        public InArgument<string> Phone { get; set; }
+        
+        [Category("Input")]
+        [Description("Postcode of merchant, max length is 16")]
+        public InArgument<string> Postcode { get; set; }
+
+        [Category("Input")]
+        [Description("Address of merchant, max length is 255")]
+        public InArgument<string> Address { get; set; }
+        
+        [Category("Input")]
+        [Description("Description of merchant, max length is 3000")]
+        public InArgument<string> Description { get; set; }
+
+        [Category("Input")]
+        [Description("Merchant categories. Make sure the categories are available")]
+        public InArgument<List<string>> MerchantCategoryNames { get; set; }
+
+        [Category("Output")]
+        public OutArgument<string> RequestOutput { get; set; }
+
+        protected override void Execute(CodeActivityContext context)
+        {
+            string KEY = APIKey.Get(context);
+            string SECRET = Secret.Get(context);
+            string BASEURL = "https://api.paxstore.us/p-market-api";
+            
+            string name = Name.Get(context);
+            string email = Email.Get(context);
+            string resellerName = ResellerName.Get(context);
+            string contact = Contact.Get(context);
+            string country = Country.Get(context);
+            string phone = Phone.Get(context);
+            string postcode = Postcode.Get(context);
+            string address = Address.Get(context);
+            string description = Description.Get(context);
+            List<string> merchantCategoryNames = MerchantCategoryNames.Get(context);
+
+            try
+            {
+                Result<Merchant> CreateMerchant()
+                {
+                    MerchantApi merchantApi = new MerchantApi(BASEURL, KEY, SECRET);
+                    MerchantCreateRequest merchantCreateRequest = new MerchantCreateRequest();
+                    merchantCreateRequest.Name = name;
+                    merchantCreateRequest.Email = email;
+                    merchantCreateRequest.ResellerName = resellerName;
+                    merchantCreateRequest.Contact = contact;
+                    merchantCreateRequest.Country = country;
+                    merchantCreateRequest.Phone = phone;
+                    merchantCreateRequest.Postcode = postcode;
+                    merchantCreateRequest.Address = address;
+                    merchantCreateRequest.Description = description;
+                    merchantCreateRequest.MerchantCategoryNames = merchantCategoryNames;  
+                    Result<Merchant> result = merchantApi.CreateMerchant(merchantCreateRequest);
+                    return result;
+                }
+                string jsonResult = JsonConvert.SerializeObject(CreateMerchant());
+                RequestOutput.Set(context, jsonResult);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Message: {0}", ex.Message);
+            }
+        }
+
+    }
+    #endregion
+
     #region PaxDisableMerchant
     public class PaxDisableMerchant : CodeActivity
     {
