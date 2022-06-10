@@ -2,9 +2,6 @@
 using Paxstore.OpenApi;
 using Paxstore.OpenApi.Model;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Activities;
 using System.ComponentModel;
 using Newtonsoft.Json;
@@ -170,7 +167,6 @@ namespace PaxSDKUiPath
                 Console.WriteLine("Error Message: {0}", ex.Message);
             }
         }
-
     }
     #endregion
 
