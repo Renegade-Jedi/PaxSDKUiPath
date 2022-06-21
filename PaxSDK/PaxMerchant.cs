@@ -116,6 +116,14 @@ namespace PaxSDKUiPath
         [Category("Input")]
         [Description("Merchant categories. Make sure the categories are available")]
         public InArgument<List<string>> MerchantCategoryNames { get; set; }
+
+        [Category("Input")]
+        [Description("Indicate whether to create user when activate the merchant, won't create user when activate if this value is empty")]
+        public InArgument<bool> CreateUserFlag { get; set; }
+
+        [Category("Input")]
+        [Description("Whether to activate the merchant when create, default value is false.")]
+        public InArgument<bool> ActivateWhenCreate { get; set; }
         #endregion
 
         [Category("Output")]
@@ -137,6 +145,8 @@ namespace PaxSDKUiPath
             string address = Address.Get(context);
             string description = Description.Get(context);
             List<string> merchantCategoryNames = MerchantCategoryNames.Get(context);
+            bool createUserFlag = CreateUserFlag.Get(context);
+            bool activateWhenCreate = ActivateWhenCreate.Get(context);
 
             try
             {
@@ -154,8 +164,12 @@ namespace PaxSDKUiPath
                         Postcode = postcode,
                         Address = address,
                         Description = description,
-                        MerchantCategoryNames = merchantCategoryNames
+                        MerchantCategoryNames = merchantCategoryNames,
+                        CreateUserFlag = createUserFlag,
                     };
+
+                    merchantCreateRequest.setActivateWhenCreate(activateWhenCreate);
+
                     Result<Merchant> result = merchantApi.CreateMerchant(merchantCreateRequest);
                     return result;
                 }

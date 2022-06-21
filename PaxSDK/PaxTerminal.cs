@@ -163,7 +163,6 @@ namespace PaxSDKUiPath
         public InArgument<string> TID { get; set; }
 
         [Category("Input")]
-        [RequiredArgument]
         [Description("The serial number of terminal. If the status is active the serial number is mandatory.")]
         public InArgument<string> SerialNo { get; set; }
 
@@ -273,7 +272,6 @@ namespace PaxSDKUiPath
         public InArgument<string> TID { get; set; }
 
         [Category("Input")]
-        [RequiredArgument]
         [Description("The serial number of terminal. If the status is active the serial number is mandatory.")]
         public InArgument<string> SerialNo { get; set; }
 
