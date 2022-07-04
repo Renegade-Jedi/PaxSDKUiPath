@@ -8,6 +8,127 @@ using Newtonsoft.Json;
 
 namespace PaxSDKUiPath
 {
+    #region PaxSearchMerchant
+    public class PaxSearchMerchant : CodeActivity
+    {
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Key")]
+        public InArgument<string> APIKey { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Secret")]
+        public InArgument<string> Secret { get; set; }
+
+        [Category("Input")]
+        [Description("Search filter by merchant name")]
+        public InArgument<string> Name { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("page number, value must >=1")]
+        public InArgument<int> PageNo { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The record number per page, range is 1 to 100")]
+        public InArgument<int> PageSize { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The reseller status the value can be MerchantStatus.All MerchantStatus.Active MerchantStatus.Inactive MerchantStatus.Suspend If the value is MerchantStatus.All it will return merchant of all status")]
+        public MerchantStatusDD Status { get; set; }
+
+        [Category("Output")]
+        public OutArgument<string> MerchantlList { get; set; }
+
+        public enum MerchantStatusDD
+        {
+            All,
+            Active,
+            Inactive,
+            Suspend
+        }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("the field name of sort order by. The value of this parameter can be one of MerchantSearchOrderBy.Name, MerchantSearchOrderBy.Phone and MerchantSearchOrderBy.Contact")]
+        public OrderByDD OrderBy { get; set; }
+
+        public enum OrderByDD
+        {
+            Name,
+            Phone,
+            Contact
+        }
+
+        protected override void Execute(CodeActivityContext context)
+        {
+            string KEY = APIKey.Get(context);
+            string SECRET = Secret.Get(context);
+            int pageNo = PageNo.Get(context);
+            int pageSize = PageSize.Get(context);
+            OrderByDD orderByDD = OrderBy;
+            var setOrderBy = MerchantSearchOrderBy.Name;
+            switch (orderByDD)
+            {
+                case OrderByDD.Name:
+                    setOrderBy = MerchantSearchOrderBy.Name;
+                    break;
+                case OrderByDD.Phone:
+                    setOrderBy = MerchantSearchOrderBy.Phone;
+                    break;
+                case OrderByDD.Contact:
+                    setOrderBy = MerchantSearchOrderBy.Contact;
+                    break;
+                default:
+                    break;
+            }
+            MerchantStatusDD statusDD = Status;
+            var setStatus = MerchantStatus.All;
+            switch (statusDD)
+            {
+                case MerchantStatusDD.All: 
+                    setStatus = MerchantStatus.All;
+                    break;
+                case MerchantStatusDD.Active:
+                    setStatus = MerchantStatus.Active;
+                    break;
+                case MerchantStatusDD.Inactive:
+                    setStatus = MerchantStatus.Inactive;
+                    break;
+                case MerchantStatusDD.Suspend:
+                    setStatus = MerchantStatus.Suspend;
+                    break;
+                default:
+                    break;
+            }
+
+            string NAME = Name.Get(context);
+            string BASEURL = "https://api.paxstore.us/p-market-api";
+
+            try
+            {
+                Result<PagedMerchant> GetMerchant()
+                {
+                    MerchantApi merchantApi = new MerchantApi(BASEURL, KEY, SECRET);
+                    Result<PagedMerchant> merchantlList = merchantApi.SearchMerchant(pageNo, pageSize, setOrderBy, NAME, setStatus);
+                    return merchantlList;
+                }
+                string jsonPagedMerchant = JsonConvert.SerializeObject(GetMerchant());
+                MerchantlList.Set(context, jsonPagedMerchant);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Message: {0}", ex.Message);
+            }
+        }
+
+    }
+    #endregion
+
     #region PaxGetMerchant
     public class PaxGetMerchant : CodeActivity
     {
@@ -24,29 +145,29 @@ namespace PaxSDKUiPath
 
         [Category("Input")]
         [RequiredArgument]
-        [Description("Search filter by merchant name")]
-        public InArgument<string> Name { get; set; }
+        [Description("The merchant id")]
+        public InArgument<long> MerchantId { get; set; }
 
         [Category("Output")]
-        public OutArgument<string> MerchantlList { get; set; }
+        public OutArgument<string> Merchant { get; set; }
 
         protected override void Execute(CodeActivityContext context)
         {
             string KEY = APIKey.Get(context);
             string SECRET = Secret.Get(context);
-            string NAME = Name.Get(context);
+            long MERCHANTID = MerchantId.Get(context);
             string BASEURL = "https://api.paxstore.us/p-market-api";
 
             try
             {
-                Result<PagedMerchant> GetMerchant()
+                Result<Merchant> GetMerchant()
                 {
                     MerchantApi merchantApi = new MerchantApi(BASEURL, KEY, SECRET);
-                    Result<PagedMerchant> merchantlList = merchantApi.SearchMerchant(1, 10, MerchantSearchOrderBy.Name, NAME, MerchantStatus.All);
-                    return merchantlList;
+                    Result<Merchant> merchant = merchantApi.GetMerchant(MERCHANTID);
+                    return merchant;
                 }
-                string jsonTerminalList = JsonConvert.SerializeObject(GetMerchant());
-                MerchantlList.Set(context, jsonTerminalList);
+                string jsonMerchant = JsonConvert.SerializeObject(GetMerchant());
+                Merchant.Set(context, jsonMerchant);
             }
             catch (Exception ex)
             {

@@ -8,6 +8,128 @@ using Newtonsoft.Json;
 
 namespace PaxSDKUiPath
 {
+    #region PaxSearchTerminal
+    public class PaxSearchTerminal : CodeActivity
+    {
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Key")]
+        public InArgument<string> APIKey { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("Enter Api Secret")]
+        public InArgument<string> Secret { get; set; }
+
+        [Category("Input")]
+        [Description("Search filter by serial number,name or TID")]
+        public InArgument<string> TId { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("page number, value must >=1")]
+        public InArgument<int> PageNo { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The record number per page, range is 1 to 100")]
+        public InArgument<int> PageSize { get; set; }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("the terminal status the value can be TerminalStatus.Active, TerminalStatus.Inactive, TerminalStatus.Suspend and TerminalStatus.All.If the value is TerminalStatus.All it will return terminals of all status")]
+        public TerminalStatusDD Status { get; set; }
+
+       
+        public enum TerminalStatusDD
+        {
+            All,
+            Active,
+            Inactive,
+            Suspend
+        }
+
+        [Category("Input")]
+        [RequiredArgument]
+        [Description("The reseller status the value can be MerchantStatus.All MerchantStatus.Active MerchantStatus.Inactive MerchantStatus.Suspend If the value is MerchantStatus.All it will return merchant of all status")]
+        public OrderByDD OrderBy { get; set; }
+
+        public enum OrderByDD
+        {
+            Name,
+            TID,
+            SerialNo
+        }
+
+
+        [Category("Output")]
+        public OutArgument<string> TerminalList { get; set; }
+
+        protected override void Execute(CodeActivityContext context)
+        {
+            string KEY = APIKey.Get(context);
+            string SECRET = Secret.Get(context);
+            string TID = TId.Get(context);
+            int pageNo = PageNo.Get(context);
+            int pageSize = PageSize.Get(context);
+            OrderByDD orderByDD = OrderBy;
+            var setOrderBy = TerminalSearchOrderBy.SerialNo;
+            switch (orderByDD)
+            {
+                case OrderByDD.Name:
+                    setOrderBy = TerminalSearchOrderBy.Name;
+                    break;
+                case OrderByDD.TID:
+                    setOrderBy = TerminalSearchOrderBy.TID;
+                    break;
+                case OrderByDD.SerialNo:
+                    setOrderBy = TerminalSearchOrderBy.SerialNo;
+                    break;
+                default:
+                    break;
+            }
+            TerminalStatusDD statusDD = Status;
+            var setStatus = TerminalStatus.All;
+            switch (statusDD)
+            {
+                case TerminalStatusDD.All:
+                    setStatus = TerminalStatus.All;
+                    break;
+                case TerminalStatusDD.Active:
+                    setStatus = TerminalStatus.Active;
+                    break;
+                case TerminalStatusDD.Inactive:
+                    setStatus = TerminalStatus.Inactive;
+                    break;
+                case TerminalStatusDD.Suspend:
+                    setStatus = TerminalStatus.Suspend;
+                    break;
+                default:
+                    break;
+            }
+
+            string BASEURL = "https://api.paxstore.us/p-market-api";
+
+            try
+            {
+                Result<Terminal> GetTerminal()
+                {
+                    TerminalApi terminalApi = new TerminalApi(BASEURL, KEY, SECRET);
+                    Result<Terminal> terminalList = terminalApi.SearchTerminal(pageNo, pageSize, setOrderBy, setStatus, TID);
+                    return terminalList;
+                }
+                string jsonTerminalList = JsonConvert.SerializeObject(GetTerminal());
+                TerminalList.Set(context, jsonTerminalList);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Message: {0}", ex.Message);
+            }
+        }
+    }
+    #endregion
+
     #region PaxGetTerminal
     public class PaxGetTerminal : CodeActivity
     {
@@ -24,17 +146,23 @@ namespace PaxSDKUiPath
 
         [Category("Input")]
         [RequiredArgument]
-        [Description("Enter TID")]
-        public InArgument<string> TId { get; set; }
+        [Description("The terminal id")]
+        public InArgument<long> TId { get; set; }
+
+        [Category("Input")]
+        [Description("The terminal id")]
+        public InArgument<bool> IncludeDetailInfo { get; set; }
+
 
         [Category("Output")]
-        public OutArgument<string> TerminalList { get; set; }
+        public OutArgument<string> Terminal { get; set; }
 
         protected override void Execute(CodeActivityContext context)
         {
             string KEY = APIKey.Get(context);
             string SECRET = Secret.Get(context);
-            string TID = TId.Get(context);
+            long tId = TId.Get(context);
+            bool includeDetailInfo = IncludeDetailInfo.Get(context);
             string BASEURL = "https://api.paxstore.us/p-market-api";
 
             try
@@ -42,11 +170,11 @@ namespace PaxSDKUiPath
                 Result<Terminal> GetTerminal()
                 {
                     TerminalApi terminalApi = new TerminalApi(BASEURL, KEY, SECRET);
-                    Result<Terminal> terminalList = terminalApi.SearchTerminal(1, 10, TerminalSearchOrderBy.SerialNo, TerminalStatus.All, TID);
-                    return terminalList;
+                    Result<Terminal> terminal = terminalApi.GetTerminal(tId,includeDetailInfo);
+                    return terminal;
                 }
-                string jsonTerminalList = JsonConvert.SerializeObject(GetTerminal());
-                TerminalList.Set(context, jsonTerminalList);
+                string jsonTerminal = JsonConvert.SerializeObject(GetTerminal());
+                Terminal.Set(context, jsonTerminal);
             }
             catch (Exception ex)
             {
